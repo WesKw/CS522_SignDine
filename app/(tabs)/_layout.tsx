@@ -28,9 +28,9 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-      name="Voice"
+      name="Microphone"
       options={{
-        title: 'Voice',
+        title: 'Microphone',
         tabBarIcon: ({ color }) => <FontAwesome size={24} color={color} />
       }}
       />
