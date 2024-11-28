@@ -1,67 +1,42 @@
-// import { Text, View, StyleSheet } from "react-native";
-// import React, { useState } from 'react';
-// import { TextInput } from "react-native-gesture-handler";
-// import { SearchBar } from '@rneui/themed';
-
-// export default function Tab() {
-//   return (
-//     <View style={styles.container}>
-//       <SearchBar placeholder="Search" style={{ height: 30, width: 330 }} />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   map: {
-//     width: '100%',
-//     height: '90%',
-//   },
-//   search: {
-//     width: '80%',
-//     height: '10%'
-//   }
-// });
-
-// class Top extends React.Component {
-//   SearchBarComponentProps = {};
-
-//   const SwitchComponent: React.FunctionComponent<SearchBarComponentProps> = () => {
-//   const [search, setSearch] = useState("");
-  
-//   const updateSearch = (search) => {
-//     setSearch(search);
-//   };
-
-//   render() {
-//     return (
-//       <View style={styles.container}>
-//         <SearchBar
-//           placeholder="Search..."
-//           style={styles.search}
-//         />
-//         
-//       </View>
-//     )
-//   }
-// }
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { SearchBar } from '@rneui/themed';
-import { View, Text, StyleSheet } from 'react-native';
-import MapView from 'react-native-maps';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import MapView, { MapMarker } from 'react-native-maps';
+import { Marker } from 'react-native-maps'
+import { db } from '../db';
 
 type SearchBarComponentProps = {};
 
 const SwitchComponent: React.FunctionComponent<SearchBarComponentProps> = () => {
-const [search, setSearch] = useState("");
+const searchBar = useRef(null);
+let mapRef = useRef<MapView>(null);
+let marker = useRef<MapMarker>(null);
 
-const updateSearch = (search) => {
-  console.log("Done")
+const [search, setSearch] = useState("");
+let runSearch = (event: any) => {
+  if (db === undefined)
+    console.error("Could not load DB");
+  // take the search term and find the closest match inside of the internal DB
+  console.log(`Searching for ${search}`);
+  const result = db.getFirstSync(`select name, street, lat, long from Restaurants where name like ?;`, search); // be careful this is dangerous
+  // search the Restaurants table for a similar name
+  if (result === null) { // if the result is null then show a popup to the user saying the restaurant could not be located
+    Alert.alert(
+      `${search} returned no results.`
+    )
+  } else {
+    let lat = result.lat
+    let long = result.long
+    let name = result.name;
+    let street = result.street;
+    mapRef.current?.animateToRegion({
+      latitude: lat, longitude: long, latitudeDelta: 0.1, longitudeDelta: 0.1
+    }, 1500);
+    marker.current?.setCoordinates({latitude: lat, longitude: long})
+  }
+}
+
+const updateSearch = (search: any) => {
   setSearch(search);
 };
 
@@ -70,21 +45,25 @@ return (
     <SearchBar
       placeholder="Search..."
       onChangeText={updateSearch}
+      onEndEditing={runSearch}
       value={search}
+      ref={searchBar}
     />
-    <MapView style={styles.map}></MapView>
+    <MapView.Animated style={styles.map} ref={mapRef} showsCompass={true} showsScale={true}>
+      <Marker coordinate={{latitude: 0, longitude: 0}} ref={marker}></Marker>
+    </MapView.Animated>
   </View>
 );
 };
 
 const styles = StyleSheet.create({
-view: {
-  margin: 10,
-},
-map: {
-  width: '100%',
-  height: '100%',
-},
+  view: {
+    margin: 10,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
 });
 
 export default SwitchComponent;
