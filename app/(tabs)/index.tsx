@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { SearchBar } from '@rneui/themed';
-import { Animated, View, Text, StyleSheet, Alert, useAnimatedValue} from 'react-native';
-import MapView, { MapMarker } from 'react-native-maps';
+import { Animated, View, Text, StyleSheet, Alert, useAnimatedValue, ScrollView} from 'react-native';
+import MapView, { MapMarker, AnimatedRegion, MarkerAnimated } from 'react-native-maps';
 import { Marker } from 'react-native-maps'
 import { db } from '../db';
+import { Button } from '@rneui/base';
+import { MenuProvider } from 'react-native-popup-menu';
 
 type SearchBarComponentProps = {};
 
@@ -11,15 +13,19 @@ const SwitchComponent: React.FunctionComponent<SearchBarComponentProps> = () => 
 const searchBar = useRef(null);
 
 let mapRef = useRef<MapView>(null);
-let marker = useRef<MapMarker>(null);
 let restaurantInfoTab = useRef<View>(null);
 let restaurantName = useRef<Text>(null);
+let userInfoPanel = useRef<ScrollView>(null);
 const animatedY = useAnimatedValue(100);
 
 const [search, setSearch] = useState("");
-const [restaurant, setRest] = useState("");
 const [restName, setRestName] = useState("Restaurant")
 const [streetTxt, setStreetTxt] = useState("Street")
+const [infoPanelVisible, setInfoPanelVisible] = useState('false');
+const [marker] = useState<MapMarker>();
+const coord = new AnimatedRegion({
+
+})
 
 let runSearch = (event: any) => {
   if (db === undefined)
@@ -40,7 +46,7 @@ let runSearch = (event: any) => {
     mapRef.current?.animateToRegion({
       latitude: lat, longitude: long, latitudeDelta: 0.1, longitudeDelta: 0.1
     }, 1500);
-    marker.current?.setCoordinates({latitude: lat, longitude: long});
+    marker?.setCoordinates({latitude: lat, longitude: long});
     
     // create menu showing restaurant info
     // restaurantInfoTab.current?
@@ -57,7 +63,9 @@ let runSearch = (event: any) => {
     // grab random user from Users table (Just use magic numbers for prototype.)
     const totalUsers = Math.floor(Math.random() * (6 - 1) + 1);
     const random = Math.floor(Math.random() * (6 - 1) + 1);
+    console.log(random);
     const usr = db.getFirstSync("select * from Users where rowid = ?;", random);
+    console.log(usr);
   }
 }
 
@@ -65,7 +73,16 @@ const updateSearch = (search: any) => {
   setSearch(search);
 };
 
+const toggleUserInfoPanel = () => {
+  let opc = 'true';
+  if (infoPanelVisible === 'true')
+    opc = 'false';
+  userInfoPanel.current?.setNativeProps({visibility: opc});
+  setInfoPanelVisible(opc);
+}
+
 return (
+  <MenuProvider>
   <View style={styles.view}>
     <SearchBar
       placeholder="Search..."
@@ -75,16 +92,20 @@ return (
       ref={searchBar}
     />
     <MapView.Animated style={styles.map} ref={mapRef} showsCompass={true} showsScale={true}>
-      <Marker coordinate={{latitude: 0, longitude: 0}} ref={marker}></Marker>
+      <MapMarker coordinate={{latitude: 0, longitude: 0}} ref={marker}></MapMarker>
     </MapView.Animated>
     <Animated.View style={[styles.restaurantTab, {transform: [{translateY: animatedY}]}]} ref={restaurantInfoTab}>
       <View style={styles.titleText}>
-        <Text ref={restaurantName}>{restName}</Text>
-        <Text >Nuimber</Text>
+          <Text ref={restaurantName} >{restName}</Text>
+          <Button size='sm' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel}>1</Button>
       </View>
       <Text style={styles.streetTxt}>{streetTxt}</Text>
     </Animated.View>
+    <ScrollView style={styles.userInfo} ref={userInfoPanel}>
+      <Text style={styles.userInfoTitle}>Who's Here?</Text>
+    </ScrollView>
   </View>
+  </MenuProvider>
 );
 };
 
@@ -107,16 +128,35 @@ const styles = StyleSheet.create({
     display: 'flex'
   },
   titleText: {
-    marginLeft: '1%',
     fontFamily: 'Sans-serif',
-    fontSize: 28,
+    fontSize: 32,
     borderBottomColor: 'black',
     borderBottomWidth: 4,
+    flexDirection: 'row',
+    margin: 5
   },
   streetTxt: {
     marginLeft: '1%',
     fontFamily: 'Sans-serif',
     fontSize: 20
+  },
+  noUsersBtn: {
+    marginRight: '10%'
+  },
+  userInfo: {
+    backgroundColor: 'gray',
+    position: 'absolute',
+    marginLeft: '2.5%',
+    width: '95%',
+    height: '25%',
+    visibility: 'false',
+    marginTop: '100%'
+  },
+  userInfoTitle: {
+    fontSize: 20,
+    marginLeft: 5,
+    borderBottomColor: 'black',
+    borderBottomWidth: 1
   }
 });
 
