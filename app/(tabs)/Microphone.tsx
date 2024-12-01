@@ -61,7 +61,7 @@ export default function Tab() {
       {/* Microphone Icon */}
       <View style={styles.micIconContainer}>
         <Image
-          source={require('../../assets/images/mic.png')} // Replace with your mic icon path
+          source={require('../../assets/images/micgraybg.jpg')} // Replace with your mic icon path
           style={styles.micIcon}
         />
       </View>
