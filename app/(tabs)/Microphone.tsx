@@ -84,7 +84,7 @@ export default function Tab() {
         <Switch value={vibrate} onValueChange={setVibrate} />
       </View>
       <View style={styles.row}>
-        <Text>Auto-Reminder: </Text>
+        <Text>Auto - Reminder: </Text>
         <TouchableOpacity
           style={styles.dropdown}
           onPress={() => setShowDropdown((prev) => !prev)}
@@ -135,7 +135,7 @@ export default function Tab() {
             <View style={styles.infoContainer}>
               <Text style={styles.infoDescription}>
                 The Auto-Reminder allows you to set a countdown. When your timer
-                reaches zero, the microphone will stop listening automatically.
+                reaches zero, the microphone will stop listening automatically and notify you.
               </Text>
               <TouchableOpacity onPress={() => setShowInfo(false)} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
