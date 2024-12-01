@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  KeyboardAvoidingView,
+  Image,
   Alert,
 } from 'react-native';
 
@@ -28,15 +28,24 @@ export default function ReviewPage() {
   });
   const [comment, setComment] = useState('');
 
+  const restaurantImages: { [key: string]: any } = {
+    '1': require('../../assets/images/restaurants/indian.jpeg'),
+    '2': require('../../assets/images/restaurants/sushi.jpeg'),
+    '3': require('../../assets/images/restaurants/pasta.jpeg'),
+    '4': require('../../assets/images/restaurants/burger.jpeg'),
+    '5': require('../../assets/images/restaurants/curry.jpeg'),
+  };
+
+
   const handleRatingChange = (category: string, value: number) => {
     setRatings({ ...ratings, [category]: value });
   };
 
   const handleSubmit = () => {
     Alert.alert('Review Submitted', 'Thank you for your feedback!');
-    setSelectedRestaurant(null);
-    setRatings({ staff: 0, food: 0, ambience: 0, ordering: 0 });
-    setComment('');
+    setSelectedRestaurant(null); // Reset to show the restaurant list
+    setRatings({ staff: 0, food: 0, ambience: 0, ordering: 0 }); // Reset ratings
+    setComment(''); // Clear the comment box
   };
 
   const filteredRestaurants = restaurants.filter((restaurant) =>
@@ -45,69 +54,44 @@ export default function ReviewPage() {
 
   if (selectedRestaurant) {
     return (
-      <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <View style={styles.container}>
+        {/* Back Button */}
+        <TouchableOpacity onPress={() => setSelectedRestaurant(null)} style={styles.backButton}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+
+        {/* Restaurant Review Form */}
         <Text style={styles.title}>{selectedRestaurant?.name || ''}</Text>
         <Text style={styles.subheading}>Rate and Review</Text>
-        <View style={styles.ratingSection}>
-          <Text>Friendly Staff:</Text>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => handleRatingChange('staff', star)}
-              >
-                <Text style={ratings.staff >= star ? styles.starFilled : styles.star}>
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
+
+        {/* Rating Sections */}
+        {['staff', 'food', 'ambience', 'ordering'].map((category) => (
+          <View key={category} style={styles.ratingSection}>
+            <Text>
+              {category === 'staff'
+                ? 'Friendly Staff'
+                : category === 'food'
+                ? 'Food'
+                : category === 'ambience'
+                ? 'Ambience/Lighting'
+                : 'Ease of Ordering'}
+              :
+            </Text>
+            <View style={styles.stars}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => handleRatingChange(category, star)}
+                >
+                  <Text style={ratings[category as keyof typeof ratings] >= star ? styles.starFilled : styles.star}>
+                    ★
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-        <View style={styles.ratingSection}>
-          <Text>Food:</Text>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => handleRatingChange('food', star)}
-              >
-                <Text style={ratings.food >= star ? styles.starFilled : styles.star}>
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-        <View style={styles.ratingSection}>
-          <Text>Ambience/Lighting:</Text>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => handleRatingChange('ambience', star)}
-              >
-                <Text style={ratings.ambience >= star ? styles.starFilled : styles.star}>
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-        <View style={styles.ratingSection}>
-          <Text>Ease of Ordering:</Text>
-          <View style={styles.stars}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => handleRatingChange('ordering', star)}
-              >
-                <Text style={ratings.ordering >= star ? styles.starFilled : styles.star}>
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+        ))}
+
         <TextInput
           style={styles.commentBox}
           placeholder="Write your comments here..."
@@ -118,7 +102,7 @@ export default function ReviewPage() {
         <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 
@@ -136,13 +120,21 @@ export default function ReviewPage() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.restaurantItem}>
-            <Text style={styles.restaurantName}>{item.name}</Text>
-            <TouchableOpacity
-              style={styles.reviewButton}
-              onPress={() => setSelectedRestaurant(item)}
-            >
-              <Text style={styles.reviewButtonText}>Review</Text>
-            </TouchableOpacity>
+            {/* Restaurant Image */}
+            <Image
+              source={restaurantImages[item.id]}
+              style={styles.restaurantImage}
+            />
+            {/* Restaurant Details */}
+            <View style={styles.restaurantDetails}>
+              <Text style={styles.restaurantName}>{item.name}</Text>
+              <TouchableOpacity
+                style={styles.reviewButton}
+                onPress={() => setSelectedRestaurant(item)}
+              >
+                <Text style={styles.reviewButtonText}>Review</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -155,6 +147,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#f5f5f5',
+  },
+  backButton: {
+    marginBottom: 16,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#007BFF',
   },
   searchBar: {
     height: 40,
@@ -177,19 +176,30 @@ const styles = StyleSheet.create({
   },
   restaurantItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
+  restaurantImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  restaurantDetails: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
   restaurantName: {
     fontSize: 18,
+    marginBottom: 8,
   },
   reviewButton: {
     backgroundColor: '#007BFF',
     padding: 8,
     borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   reviewButtonText: {
     color: '#fff',
