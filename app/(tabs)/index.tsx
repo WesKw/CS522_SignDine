@@ -127,11 +127,13 @@ return (
     </Animated.ScrollView>
     <Animated.View style={[styles.restaurantTab, {transform: [{translateY: animatedY}]}]} ref={restaurantInfoTab}>
       <View style={styles.titleText}>
+          <Text ref={restaurantName} style={styles.restaurantNameStyle}>{restName}</Text>
+          <View style={styles.spacing} />
           <Button size='sm' style={styles.reviewPageBtn}>
             {averageScore}
           </Button>
-          <Text ref={restaurantName} style={styles.restaurantNameStyle}>{restName}</Text>
-          <Button size='md' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel} type="clear" color="white">
+          <View style={styles.spacing} />
+          <Button size='sm' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel} type="solid" color="green">
             {numberOfPeople}
             <Icon name="group" reverse={false}></Icon>
           </Button>
@@ -168,7 +170,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     flexDirection: 'row',
     margin: 5,
-    textAlign: 'center'
+    textAlign: 'center',
   },
   streetTxt: {
     marginLeft: '1%',
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
     fontSize: 20
   },
   noUsersBtn: {
-    marginRight: '10%'
+    marginRight: '30%'
   },
   userInfo: {
     backgroundColor: 'gray',
@@ -203,6 +205,9 @@ const styles = StyleSheet.create({
   },
   restaurantNameStyle: {
     fontSize: 24
+  },
+  spacing: {
+    width: 70
   }
 });
 
