@@ -16,11 +16,10 @@ export default function Tab() {
   const [timer, setTimer] = useState(0);
   const [orderNumber, setOrderNumber] = useState('');
   const [vibrate, setVibrate] = useState(false);
-  const [autoReminder, setAutoReminder] = useState(5);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [autoReminderValue, setAutoReminderValue] = useState('');
+  const [autoReminderUnit, setAutoReminderUnit] = useState('seconds');
+  const [unitDropdownVisible, setUnitDropdownVisible] = useState(false);
   const [showInfo, setShowInfo] = useState(false); // For info button
-
-  const reminderOptions = [5, 10, 15, 20, 30];
 
   useEffect(() => {
     let interval;
@@ -39,31 +38,38 @@ export default function Tab() {
     if (isMicOn) {
       setIsMicOn(false);
       setMicStatus('Not Listening');
+      setTimer(0); // Reset timer to 00:00
+      setOrderNumber(''); // Clear the order number text field
     } else if (orderNumber) {
       setIsMicOn(true);
       setMicStatus('Listening');
-      setTimer(autoReminder * 60);
+      const timeInSeconds =
+        autoReminderUnit === 'minutes'
+          ? parseInt(autoReminderValue) * 60
+          : parseInt(autoReminderValue);
+      setTimer(timeInSeconds || 0);
     }
   };
 
-  const handleReminderSelect = (value) => {
-    setAutoReminder(value);
-    setShowDropdown(false);
-  };
+  const micStatusColor = micStatus === 'Listening' ? 'green' : 'red';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Microphone</Text>
-      <View style={styles.statusBar}>
-        <Text>Status: {micStatus}</Text>
-      </View>
+      {/* Mic Icon */}
+      <Image
+        source={require('../../assets/images/micgraybg.jpg')} // Replace with your mic icon path
+        style={styles.micIcon}
+      />
 
-      {/* Microphone Icon */}
-      <View style={styles.micIconContainer}>
-        <Image
-          source={require('../../assets/images/micgraybg.jpg')} // Replace with your mic icon path
-          style={styles.micIcon}
-        />
+      {/* Listening Text */}
+      {isMicOn && orderNumber ? (
+        <Text style={styles.title}>Listening to order number: {orderNumber}</Text>
+      ) : null}
+
+      <View style={styles.statusBar}>
+        <Text style={[styles.statusText, { color: micStatusColor }]}>
+          Status: {micStatus}
+        </Text>
       </View>
 
       {/* Timer */}
@@ -79,22 +85,62 @@ export default function Tab() {
         onChangeText={setOrderNumber}
         keyboardType="numeric"
       />
-      <View style={styles.row}>
-        <Text>Vibrate: </Text>
+
+      {/* Auto-Reminder */}
+      <View style={styles.autoReminderContainer}>
+        <View style={styles.autoReminderHeader}>
+          <Text style={styles.label}>Auto - Reminder</Text>
+          <TouchableOpacity onPress={() => setShowInfo(true)} style={styles.infoButton}>
+            <Text style={styles.infoText}>i</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.autoReminderInputs}>
+          <TextInput
+            style={styles.reminderInput}
+            placeholder="Value"
+            value={autoReminderValue}
+            onChangeText={setAutoReminderValue}
+            keyboardType="numeric"
+          />
+          <TouchableOpacity
+            onPress={() => setUnitDropdownVisible(true)}
+            style={styles.unitDropdown}
+          >
+            <Text style={styles.unitDropdownText}>{autoReminderUnit}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Vibrate */}
+      <View style={styles.vibrateRow}>
+        <Text style={styles.vibrateLabel}>Vibrate</Text>
         <Switch value={vibrate} onValueChange={setVibrate} />
       </View>
-      <View style={styles.row}>
-        <Text>Auto - Reminder: </Text>
-        <TouchableOpacity
-          style={styles.dropdown}
-          onPress={() => setShowDropdown((prev) => !prev)}
-        >
-          <Text style={styles.dropdownText}>{autoReminder} minutes</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowInfo(true)} style={styles.infoButton}>
-          <Text style={styles.infoText}>i</Text>
-        </TouchableOpacity>
-      </View>
+
+      {/* Unit Dropdown Modal */}
+      {unitDropdownVisible && (
+        <Modal transparent={true} animationType="fade">
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setUnitDropdownVisible(false)}
+          >
+            <View style={styles.dropdownContainer}>
+              {['seconds', 'minutes'].map((unit) => (
+                <TouchableOpacity
+                  key={unit}
+                  style={styles.dropdownOption}
+                  onPress={() => {
+                    setAutoReminderUnit(unit);
+                    setUnitDropdownVisible(false);
+                  }}
+                >
+                  <Text style={styles.dropdownOptionText}>{unit}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
 
       {/* Start Button */}
       <TouchableOpacity onPress={toggleMic} style={styles.startButton}>
@@ -102,28 +148,6 @@ export default function Tab() {
           {isMicOn ? 'Stop Listening' : 'Start Listening'}
         </Text>
       </TouchableOpacity>
-
-      {/* Dropdown Modal */}
-      {showDropdown && (
-        <Modal transparent={true} animationType="fade">
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={() => setShowDropdown(false)}
-          >
-            <View style={styles.dropdownContainer}>
-              {reminderOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={styles.dropdownOption}
-                  onPress={() => handleReminderSelect(option)}
-                >
-                  <Text style={styles.dropdownOptionText}>{option} minutes</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      )}
 
       {/* Info Modal */}
       {showInfo && (
@@ -134,8 +158,9 @@ export default function Tab() {
           >
             <View style={styles.infoContainer}>
               <Text style={styles.infoDescription}>
-                The Auto-Reminder allows you to set a countdown. When your timer
-                reaches zero, the microphone will stop listening automatically and notify you.
+                The Auto-Reminder allows you to set a countdown in seconds or
+                minutes. When the timer reaches zero, the microphone will stop
+                listening automatically and notify you.
               </Text>
               <TouchableOpacity onPress={() => setShowInfo(false)} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>Close</Text>
@@ -154,56 +179,63 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '##f5f5f5', 
+  },
+  micIcon: {
+    width: 100, // Adjust size based on your icon dimensions
+    height: 100,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
+    color: '#333',
+    textAlign: 'center',
   },
   statusBar: {
     marginBottom: 16,
     padding: 8,
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
+    width: '80%',
+    alignItems: 'center',
   },
-  micIconContainer: {
-    marginVertical: 16,
-  },
-  micIcon: {
-    width: 80, // Adjust size based on your icon dimensions
-    height: 80,
+  statusText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   timer: {
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: 'bold',
     marginVertical: 16,
+    textAlign: 'center',
   },
   input: {
-    height: 40,
+    height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    width: '80%',
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  autoReminderContainer: {
     width: '80%',
     marginBottom: 16,
   },
-  row: {
+  autoReminderHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
   },
-  dropdown: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    backgroundColor: '#fff',
-  },
-  dropdownText: {
-    fontSize: 16,
+  label: {
+    fontSize: 18,
+    color: '#333',
   },
   infoButton: {
-    marginLeft: 8,
     justifyContent: 'center',
     alignItems: 'center',
     width: 24,
@@ -216,11 +248,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  autoReminderInputs: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  reminderInput: {
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    width: '48%',
+    backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  unitDropdown: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: '#fff',
+    width: '48%',
+    alignItems: 'center',
+  },
+  unitDropdownText: {
+    fontSize: 16,
+  },
+  vibrateRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '80%',
+    marginBottom: 16,
+  },
+  vibrateLabel: {
+    fontSize: 14,
+    color: '#333',
+    marginRight: 8,
+  },
   startButton: {
     marginTop: 32,
     padding: 16,
     backgroundColor: '#007BFF',
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     width: '80%',
   },
@@ -237,22 +309,24 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     width: '80%',
-    alignSelf: 'center',
+    alignItems: 'center',
   },
   dropdownOption: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    width: '100%',
   },
   dropdownOptionText: {
     fontSize: 16,
+    textAlign: 'center',
   },
   infoContainer: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 20,
     width: '80%',
     alignItems: 'center',
@@ -263,10 +337,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   closeButton: {
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: '#007BFF',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   closeButtonText: {
     color: '#fff',
