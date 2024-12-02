@@ -13,11 +13,11 @@ import {
 export default function ReviewPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [restaurants, setRestaurants] = useState([
-    { id: '1', name: 'The Great Indian Dhaba' },
-    { id: '2', name: 'Sushi World' },
-    { id: '3', name: 'Pasta Fiesta' },
-    { id: '4', name: 'Burger Palace' },
-    { id: '5', name: 'Curry Kingdom' },
+    { id: '1', name: 'The Great Indian Dhaba', date: 'Visited: 2024-11-01', reviewed: false },
+    { id: '2', name: 'Sushi World', date: 'Visited: 2024-11-10', reviewed: false },
+    { id: '3', name: 'Pasta Fiesta', date: 'Visited: 2024-11-15', reviewed: false },
+    { id: '4', name: 'Burger Palace', date: 'Visited: 2024-11-20', reviewed: false },
+    { id: '5', name: 'Curry Kingdom', date: 'Visited: 2024-11-25', reviewed: false },
   ]);
   const [selectedRestaurant, setSelectedRestaurant] = useState<null | { id: string; name: string }>(null);
   const [ratings, setRatings] = useState({
@@ -36,16 +36,36 @@ export default function ReviewPage() {
     '5': require('../../assets/images/restaurants/curry.jpeg'),
   };
 
-
   const handleRatingChange = (category: string, value: number) => {
     setRatings({ ...ratings, [category]: value });
   };
 
   const handleSubmit = () => {
     Alert.alert('Review Submitted', 'Thank you for your feedback!');
+    setRestaurants((prevRestaurants) =>
+      prevRestaurants.map((restaurant) =>
+        restaurant.id === selectedRestaurant?.id
+          ? { ...restaurant, reviewed: true }
+          : restaurant
+      )
+    );
     setSelectedRestaurant(null); // Reset to show the restaurant list
     setRatings({ staff: 0, food: 0, ambience: 0, ordering: 0 }); // Reset ratings
     setComment(''); // Clear the comment box
+  };
+
+  const handleEditReview = (restaurant: { id: string; name: string }) => {
+    setSelectedRestaurant(restaurant);
+    const existingReview = restaurants.find((r) => r.id === restaurant.id);
+    if (existingReview) {
+      setRatings({
+        staff: ratings.staff,
+        food: ratings.food,
+        ambience: ratings.ambience,
+        ordering: ratings.ordering,
+      });
+      setComment(comment);
+    }
   };
 
   const filteredRestaurants = restaurants.filter((restaurant) =>
@@ -128,12 +148,27 @@ export default function ReviewPage() {
             {/* Restaurant Details */}
             <View style={styles.restaurantDetails}>
               <Text style={styles.restaurantName}>{item.name}</Text>
-              <TouchableOpacity
-                style={styles.reviewButton}
-                onPress={() => setSelectedRestaurant(item)}
-              >
-                <Text style={styles.reviewButtonText}>Review</Text>
-              </TouchableOpacity>
+              <Text style={styles.visitDate}>{item.date}</Text>
+            </View>
+            <View style={styles.reviewButtonContainer}>
+              {item.reviewed ? (
+                <>
+                  <Text style={styles.reviewedLabel}>Reviewed</Text>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleEditReview(item)}
+                  >
+                    <Text style={styles.editButtonText}>Edit Review</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity
+                  style={styles.reviewButton}
+                  onPress={() => setSelectedRestaurant(item)}
+                >
+                  <Text style={styles.reviewButtonText}>Review</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         )}
@@ -189,21 +224,42 @@ const styles = StyleSheet.create({
   },
   restaurantDetails: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   restaurantName: {
     fontSize: 18,
-    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  visitDate: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 4,
+  },
+  reviewButtonContainer: {
+    alignItems: 'flex-end',
   },
   reviewButton: {
     backgroundColor: '#007BFF',
     padding: 8,
     borderRadius: 4,
-    alignSelf: 'flex-start',
   },
   reviewButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  reviewedLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'green',
+  },
+  editButton: {
+    backgroundColor: '#FFA500',
+    padding: 8,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  editButtonText: {
+    color: '#fff',
+    fontSize: 14,
   },
   ratingSection: {
     marginBottom: 16,
