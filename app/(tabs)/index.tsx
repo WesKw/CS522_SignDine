@@ -4,8 +4,9 @@ import { Animated, View, Text, StyleSheet, Alert, useAnimatedValue, ScrollView} 
 import MapView, { MapMarker, AnimatedRegion, MarkerAnimated, LatLng } from 'react-native-maps';
 import { Marker } from 'react-native-maps'
 import { db } from '../db';
-import { Button } from '@rneui/base';
+import { Button, Icon } from '@rneui/base';
 import { MenuProvider } from 'react-native-popup-menu';
+import {  } from '@primer/octicons-react'
 
 type SearchBarComponentProps = {};
 
@@ -126,9 +127,14 @@ return (
     </Animated.ScrollView>
     <Animated.View style={[styles.restaurantTab, {transform: [{translateY: animatedY}]}]} ref={restaurantInfoTab}>
       <View style={styles.titleText}>
-          <Button size='sm' style={styles.reviewPageBtn}>{averageScore}</Button>
+          <Button size='sm' style={styles.reviewPageBtn}>
+            {averageScore}
+          </Button>
           <Text ref={restaurantName} style={styles.restaurantNameStyle}>{restName}</Text>
-          <Button size='md' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel}>{numberOfPeople}</Button>
+          <Button size='md' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel} type="clear" color="white">
+            {numberOfPeople}
+            <Icon name="group" reverse={false}></Icon>
+          </Button>
       </View>
       <Text style={styles.streetTxt}>{streetTxt}</Text>
     </Animated.View>
