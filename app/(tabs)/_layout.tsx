@@ -17,6 +17,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <FontAwesome name="map" size={24} color={color} />
           ),
+          title: "SignDine"
         }}
       />
 
