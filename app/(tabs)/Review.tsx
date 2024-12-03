@@ -20,35 +20,35 @@ export default function ReviewPage() {
       id: '1',
       name: 'The Great Indian Dhaba',
       date: 'Visited: 2024-11-01',
-      location: 'Mumbai, India',
+      location: 'Lincoln Park, Chicago',
       reviewed: false,
     },
     {
       id: '2',
       name: 'Sushi World',
       date: 'Visited: 2024-11-10',
-      location: 'Tokyo, Japan',
+      location: 'River North, Chicago',
       reviewed: false,
     },
     {
       id: '3',
       name: 'Pasta Fiesta',
       date: 'Visited: 2024-11-15',
-      location: 'Rome, Italy',
+      location: 'Wicker Park, Chicago',
       reviewed: false,
     },
     {
       id: '4',
       name: 'Burger Palace',
       date: 'Visited: 2024-11-20',
-      location: 'New York, USA',
+      location: 'The Loop, Chicago',
       reviewed: false,
     },
     {
       id: '5',
       name: 'Curry Kingdom',
       date: 'Visited: 2024-11-25',
-      location: 'London, UK',
+      location: 'Hyde Park, Chicago',
       reviewed: false,
     },
   ]);
@@ -121,6 +121,10 @@ export default function ReviewPage() {
   );
 
   if (selectedRestaurant) {
+    const selectedLocation = restaurants.find(
+      (restaurant) => restaurant.id === selectedRestaurant.id
+    )?.location;
+
     return (
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
@@ -136,6 +140,10 @@ export default function ReviewPage() {
               style={styles.reviewImage}
             />
             <Text style={styles.reviewTitle}>{selectedRestaurant?.name || ''}</Text>
+            <View style={styles.locationRow}>
+              <Ionicons name="location-sharp" size={16} color="#007BFF" />
+              <Text style={styles.locationText}>{selectedLocation}</Text>
+            </View>
           </View>
 
           {/* Restaurant Review Form */}
