@@ -11,15 +11,46 @@ import {
   Animated,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // For location icon
 
 export default function ReviewPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [restaurants, setRestaurants] = useState([
-    { id: '1', name: 'The Great Indian Dhaba', date: 'Visited: 2024-11-01', reviewed: false },
-    { id: '2', name: 'Sushi World', date: 'Visited: 2024-11-10', reviewed: false },
-    { id: '3', name: 'Pasta Fiesta', date: 'Visited: 2024-11-15', reviewed: false },
-    { id: '4', name: 'Burger Palace', date: 'Visited: 2024-11-20', reviewed: false },
-    { id: '5', name: 'Curry Kingdom', date: 'Visited: 2024-11-25', reviewed: false },
+    {
+      id: '1',
+      name: 'The Great Indian Dhaba',
+      date: 'Visited: 2024-11-01',
+      location: 'Mumbai, India',
+      reviewed: false,
+    },
+    {
+      id: '2',
+      name: 'Sushi World',
+      date: 'Visited: 2024-11-10',
+      location: 'Tokyo, Japan',
+      reviewed: false,
+    },
+    {
+      id: '3',
+      name: 'Pasta Fiesta',
+      date: 'Visited: 2024-11-15',
+      location: 'Rome, Italy',
+      reviewed: false,
+    },
+    {
+      id: '4',
+      name: 'Burger Palace',
+      date: 'Visited: 2024-11-20',
+      location: 'New York, USA',
+      reviewed: false,
+    },
+    {
+      id: '5',
+      name: 'Curry Kingdom',
+      date: 'Visited: 2024-11-25',
+      location: 'London, UK',
+      reviewed: false,
+    },
   ]);
   const [selectedRestaurant, setSelectedRestaurant] = useState<null | { id: string; name: string }>(null);
   const [ratings, setRatings] = useState({
@@ -98,14 +129,16 @@ export default function ReviewPage() {
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
 
-          {/* Restaurant Image */}
-          <Image
-            source={restaurantImages[selectedRestaurant.id]}
-            style={styles.reviewImage}
-          />
+          {/* Image and Title in a Stylish Box */}
+          <View style={styles.reviewBox}>
+            <Image
+              source={restaurantImages[selectedRestaurant.id]}
+              style={styles.reviewImage}
+            />
+            <Text style={styles.reviewTitle}>{selectedRestaurant?.name || ''}</Text>
+          </View>
 
           {/* Restaurant Review Form */}
-          <Text style={styles.title}>{selectedRestaurant?.name || ''}</Text>
           <Text style={styles.subheading}>Rate and Review</Text>
 
           {/* Rating Sections */}
@@ -172,7 +205,7 @@ export default function ReviewPage() {
         data={filteredRestaurants}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.restaurantItem}>
+          <View style={styles.restaurantBox}>
             {/* Restaurant Image */}
             <Image
               source={restaurantImages[item.id]}
@@ -182,6 +215,10 @@ export default function ReviewPage() {
             <View style={styles.restaurantDetails}>
               <Text style={styles.restaurantName}>{item.name}</Text>
               <Text style={styles.visitDate}>{item.date}</Text>
+              <View style={styles.locationRow}>
+                <Ionicons name="location-sharp" size={16} color="#007BFF" />
+                <Text style={styles.locationText}>{item.location}</Text>
+              </View>
             </View>
             <View style={styles.reviewButtonContainer}>
               {item.reviewed ? (
@@ -245,12 +282,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  restaurantItem: {
+  restaurantBox: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    marginBottom: 16,
+    elevation: 2,
   },
   restaurantImage: {
     width: 60,
@@ -269,6 +312,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     marginTop: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#007BFF',
+    marginLeft: 4,
   },
   reviewButtonContainer: {
     alignItems: 'flex-end',
@@ -296,6 +349,29 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: '#fff',
     fontSize: 14,
+  },
+  reviewBox: {
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    marginBottom: 16,
+    elevation: 2,
+  },
+  reviewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  reviewTitle: {
+    marginTop: 12,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
   },
   ratingSection: {
     marginBottom: 16,
@@ -331,11 +407,5 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: '#fff',
     fontSize: 18,
-  },
-  reviewImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 16,
   },
 });
