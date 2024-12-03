@@ -8,6 +8,7 @@ import {
   Switch,
   Modal,
   Image,
+  Animated,
 } from 'react-native';
 
 export default function Tab() {
@@ -20,6 +21,9 @@ export default function Tab() {
   const [autoReminderUnit, setAutoReminderUnit] = useState('seconds');
   const [unitDropdownVisible, setUnitDropdownVisible] = useState(false);
   const [showInfo, setShowInfo] = useState(false); // For info button
+  const [popupAnim] = useState(new Animated.Value(1)); // For auto-reminder popup animation
+  const [micAnim] = useState(new Animated.Value(0)); // For microphone animation
+  const [headingAnim] = useState(new Animated.Value(1)); // For heading animation
 
   useEffect(() => {
     let interval;
@@ -40,6 +44,11 @@ export default function Tab() {
       setMicStatus('Not Listening');
       setTimer(0); // Reset timer to 00:00
       setOrderNumber(''); // Clear the order number text field
+      Animated.timing(micAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     } else if (orderNumber) {
       setIsMicOn(true);
       setMicStatus('Listening');
@@ -48,17 +57,84 @@ export default function Tab() {
           ? parseInt(autoReminderValue) * 60
           : parseInt(autoReminderValue);
       setTimer(timeInSeconds || 0);
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(micAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(micAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
     }
   };
+
+  const startPopupAnim = () => {
+    Animated.spring(popupAnim, {
+      toValue: 1.1,
+      friction: 3,
+      useNativeDriver: true,
+    }).start(() =>
+      Animated.spring(popupAnim, {
+        toValue: 1,
+        friction: 3,
+        useNativeDriver: true,
+      }).start()
+    );
+  };
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(headingAnim, {
+          toValue: 1.2,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(headingAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   const micStatusColor = micStatus === 'Listening' ? 'green' : 'red';
 
   return (
     <View style={styles.container}>
-      {/* Mic Icon */}
-      <Image
+      {/* Enhanced Page Heading */}
+      <Animated.Text
+        style={[
+          styles.heading,
+          { transform: [{ scale: headingAnim }] },
+        ]}
+      >
+        Microphone
+      </Animated.Text>
+
+      {/* Animated Mic Icon */}
+      <Animated.Image
         source={require('../../assets/images/micgraybg.jpg')} // Replace with your mic icon path
-        style={styles.micIcon}
+        style={[
+          styles.micIcon,
+          {
+            transform: [
+              {
+                rotate: micAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '15deg'],
+                }),
+              },
+            ],
+          },
+        ]}
       />
 
       {/* Listening Text */}
@@ -86,8 +162,14 @@ export default function Tab() {
         keyboardType="numeric"
       />
 
-      {/* Auto-Reminder */}
-      <View style={styles.autoReminderContainer}>
+      {/* Auto-Reminder with Popup Animation */}
+      <Animated.View
+        style={[
+          styles.autoReminderContainer,
+          { transform: [{ scale: popupAnim }] },
+        ]}
+        onTouchStart={startPopupAnim}
+      >
         <View style={styles.autoReminderHeader}>
           <Text style={styles.label}>Auto - Reminder</Text>
           <TouchableOpacity onPress={() => setShowInfo(true)} style={styles.infoButton}>
@@ -109,7 +191,7 @@ export default function Tab() {
             <Text style={styles.unitDropdownText}>{autoReminderUnit}</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Vibrate */}
       <View style={styles.vibrateRow}>
@@ -179,10 +261,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '##f5f5f5', 
+    backgroundColor: '#f5f5f5',
+  },
+  heading: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#007BFF',
+    marginBottom: 16,
   },
   micIcon: {
-    width: 100, // Adjust size based on your icon dimensions
+    width: 100,
     height: 100,
     marginBottom: 16,
   },
@@ -225,6 +313,14 @@ const styles = StyleSheet.create({
   autoReminderContainer: {
     width: '80%',
     marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   autoReminderHeader: {
     flexDirection: 'row',
