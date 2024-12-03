@@ -23,7 +23,6 @@ export default function Tab() {
   const [showInfo, setShowInfo] = useState(false); // For info button
   const [popupAnim] = useState(new Animated.Value(1)); // For auto-reminder popup animation
   const [micAnim] = useState(new Animated.Value(0)); // For microphone animation
-  const [headingAnim] = useState(new Animated.Value(1)); // For heading animation
 
   useEffect(() => {
     let interval;
@@ -38,25 +37,9 @@ export default function Tab() {
     return () => clearInterval(interval);
   }, [isMicOn, timer]);
 
-  const toggleMic = () => {
+  useEffect(() => {
     if (isMicOn) {
-      setIsMicOn(false);
-      setMicStatus('Not Listening');
-      setTimer(0); // Reset timer to 00:00
-      setOrderNumber(''); // Clear the order number text field
-      Animated.timing(micAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else if (orderNumber) {
-      setIsMicOn(true);
-      setMicStatus('Listening');
-      const timeInSeconds =
-        autoReminderUnit === 'minutes'
-          ? parseInt(autoReminderValue) * 60
-          : parseInt(autoReminderValue);
-      setTimer(timeInSeconds || 0);
+      // Start animation when listening
       Animated.loop(
         Animated.sequence([
           Animated.timing(micAnim, {
@@ -71,6 +54,30 @@ export default function Tab() {
           }),
         ])
       ).start();
+    } else {
+      // Stop animation when not listening
+      Animated.timing(micAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).stop();
+    }
+  }, [isMicOn]);
+
+  const toggleMic = () => {
+    if (isMicOn) {
+      setIsMicOn(false);
+      setMicStatus('Not Listening');
+      setTimer(0); // Reset timer to 00:00
+      setOrderNumber(''); // Clear the order number text field
+    } else if (orderNumber) {
+      setIsMicOn(true);
+      setMicStatus('Listening');
+      const timeInSeconds =
+        autoReminderUnit === 'minutes'
+          ? parseInt(autoReminderValue) * 60
+          : parseInt(autoReminderValue);
+      setTimer(timeInSeconds || 0);
     }
   };
 
@@ -88,37 +95,10 @@ export default function Tab() {
     );
   };
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(headingAnim, {
-          toValue: 1.2,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(headingAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
   const micStatusColor = micStatus === 'Listening' ? 'green' : 'red';
 
   return (
     <View style={styles.container}>
-      {/* Enhanced Page Heading */}
-      <Animated.Text
-        style={[
-          styles.heading,
-          { transform: [{ scale: headingAnim }] },
-        ]}
-      >
-        Microphone
-      </Animated.Text>
-
       {/* Animated Mic Icon */}
       <Animated.Image
         source={require('../../assets/images/micgraybg.jpg')} // Replace with your mic icon path
@@ -262,12 +242,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#f5f5f5',
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#007BFF',
-    marginBottom: 16,
   },
   micIcon: {
     width: 100,
