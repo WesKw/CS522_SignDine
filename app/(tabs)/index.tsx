@@ -6,7 +6,7 @@ import { Marker } from 'react-native-maps'
 import { db } from '../db';
 import { Button, Icon } from '@rneui/base';
 import { MenuProvider } from 'react-native-popup-menu';
-import {  } from '@primer/octicons-react'
+import {Link} from 'expo-router'
 
 type SearchBarComponentProps = {};
 
@@ -130,7 +130,9 @@ return (
           <Text ref={restaurantName} style={styles.restaurantNameStyle}>{restName}</Text>
           <View style={styles.spacing} />
           <Button size='sm' style={styles.reviewPageBtn}>
-            {averageScore}
+            <Link href="/(tabs)/Review">
+              {averageScore}
+            </Link>
           </Button>
           <View style={styles.spacing} />
           <Button size='sm' style={styles.noUsersBtn} onPressOut={toggleUserInfoPanel} type="solid" color="green">
