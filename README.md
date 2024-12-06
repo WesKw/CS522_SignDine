@@ -49,3 +49,5 @@ Join our community of developers creating universal apps.
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 # CS522_SignDine
+
+Note:: This application has only been tested with an Android development environment. The web version is not guaranteed to work and the map component will be broken.
